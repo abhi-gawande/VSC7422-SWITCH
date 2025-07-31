@@ -59,6 +59,7 @@ typedef enum {
     VTSS_PHY_FAMILY_TESLA,    /* VSC8574, VSC8504, VSC8552 */
     VTSS_PHY_FAMILY_VIPER,    /* VSC8582, VSC8584, VSC8575, VSC8564, VSC8586 */
     VTSS_PHY_FAMILY_ELISE,    /* VSC8514 */
+    VTSS_PHY_FAMILY_GPY,      /* GPY211 */
 } vtss_phy_family_t;
 
 /*****************************************************************************
@@ -104,6 +105,8 @@ typedef enum {
 /* Enzo */
 #define PHY_ID_VTSS_8664 0x00070660
 
+#define PHY_ID_GPY211 0x67C9DE10  // GPY211 PHY ID
+
 typedef enum {
     PHY_MODEL_UNKNOWN,
 
@@ -127,6 +130,8 @@ typedef enum {
     PHY_MODEL_VTSS_8552,
 
     PHY_MODEL_VTSS_8514,
+
+    PHY_MODEL_GPY211,
 } phy_model_t;
 
 /****************************************************************************
@@ -300,6 +305,33 @@ vtss_rc cobra_mac_media_if_setup
     vtss_phy_reset_conf_t *conf
 );
 #endif /* VTSS_COBRA */
+
+#if VTSS_GPY211
+/**
+ * Function to be called at startup before the phy ports are reset.
+ *
+ * @param   port_no     The phy port number starting from 0.
+ * @param   phy_id      Pointer to PHY identification structure.
+ */
+vtss_rc gpy211_init_seq_pre(
+    vtss_port_no_t          port_no,
+    phy_id_t                *phy_id
+);
+
+vtss_rc gpy211_init_seq(
+    vtss_port_no_t          port_no,
+    phy_id_t                *phy_id
+);
+
+/**
+ * Setup the MAC interface mode and media interface mode.
+ * Note: GPY211 handles this automatically via firmware,
+ * but keeping for API consistency.
+ */
+vtss_rc gpy211_mac_media_if_setup(
+    vtss_port_no_t          port_no,
+    vtss_phy_reset_conf_t   *conf
+);
 
 
 #endif /* __PHY_FAMILY_H__ */
