@@ -35,6 +35,8 @@
 #define VTSS_ATOM12_C   0
 #define VTSS_ATOM12_D   1
 
+#define VTSS_GPY211     1  /* Enables support of GPY211 (2.5G PHY) */
+
 #define VTSS_TESLA      0 /* Enables support of VSC8504, VSC8552 */
 #define VTSS_TESLA_A    0
 #define VTSS_TESLA_B    0
@@ -161,7 +163,7 @@ Luton25 port number:
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 0, 0}
 
 #define PHY_MAP_MIIM_NO { \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 9}
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 1}
 
 #define PHY_MAP_COMA_MODE_DISABLE { \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0}
@@ -318,12 +320,13 @@ Luton10 port number:
 ** Set SFP_NUM to number of SFP modules. If no SFPs, set it to 0, and the
 ** remaining SFP configuration is don't care.
 */
+#define SFP_NUM 0   // to disable the sfp
 
-#define SFP_RATE_SEL_GPIO       4
-#define SFP_MODULE_DETECT_GPIO  3
-#define SFP_TX_DISABLE_GPIO     2
+// #define SFP_RATE_SEL_GPIO       4
+// #define SFP_MODULE_DETECT_GPIO  3
+// #define SFP_TX_DISABLE_GPIO     2
 
-#define SFP_MODULE_GPIO_PORT    12
+// #define SFP_MODULE_GPIO_PORT    12
 
 /*****************************************************************************
  *
