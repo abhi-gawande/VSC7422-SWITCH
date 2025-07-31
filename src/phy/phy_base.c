@@ -326,6 +326,14 @@ void phy_read_id (vtss_port_no_t port_no, phy_id_t *phy_id_p)
         phy_id_p->model  = PHY_MODEL_VTSS_8512;
         break;
 #endif
+ #if VTSS_GPY211
+    case PHY_ID_GPY211:
+        phy_id_p->family = VTSS_PHY_FAMILY_GPY;
+        phy_id_p->model = PHY_ID_GPY211;
+					
+        break;
+#endif
+	    
 #if VTSS_TESLA
     case PHY_ID_VTSS_8574:
     case PHY_ID_VTSS_8504:
