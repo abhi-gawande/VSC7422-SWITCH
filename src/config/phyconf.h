@@ -160,7 +160,7 @@ Luton25 port number:
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,xx,25
   -------------------------------------------------------------------------- */
 #define PHY_MAP_PHY_NO  { \
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 0, 0}
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11, 0, 25}
 
 #define PHY_MAP_MIIM_NO { \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 1}
@@ -320,13 +320,14 @@ Luton10 port number:
 ** Set SFP_NUM to number of SFP modules. If no SFPs, set it to 0, and the
 ** remaining SFP configuration is don't care.
 */
+
 #define SFP_NUM 0   // to disable the sfp
 
 // #define SFP_RATE_SEL_GPIO       4
 // #define SFP_MODULE_DETECT_GPIO  3
 // #define SFP_TX_DISABLE_GPIO     2
 
-// #define SFP_MODULE_GPIO_PORT    12
+ #define SFP_MODULE_GPIO_PORT    12
 
 /*****************************************************************************
  *
