@@ -266,20 +266,6 @@ ushort vtss_phy_read_temp(vtss_port_no_t port_no)
 
 /* ************************************************************************ */
 
-void gpio_uart_disable_and_init() {
-    // Disable UART ALT function for GPIO_30 and GPIO_31
-    h2_write_masked(VTSS_DEVCPU_GCB_GPIO_GPIO_ALT(0), VTSS_GPIO_UART_MASK, 0x00000000);
-    // Set GPIO_30 and GPIO_31 as output
-    h2_write_masked(VTSS_DEVCPU_GCB_GPIO_GPIO_OE, VTSS_GPIO_UART_MASK, VTSS_GPIO_UART_MASK);
-}
-
-void gpio_square_wave_gpio30_31() {
-    while (1) {
-        // Set low
-    h2_write_masked(VTSS_DEVCPU_GCB_GPIO_GPIO_OUT_CLR, VTSS_GPIO_UART_MASK, VTSS_GPIO_UART_MASK);
-
-    }
-}
          
 			 
 void phy_read_id (vtss_port_no_t port_no, phy_id_t *phy_id_p)
@@ -362,8 +348,7 @@ void phy_read_id (vtss_port_no_t port_no, phy_id_t *phy_id_p)
     case PHY_ID_GPY211:
         phy_id_p->family = VTSS_PHY_FAMILY_GPY;
         phy_id_p->model = PHY_MODEL_GPY211;
-		    //gpio_uart_disable_and_init();
-            // gpio_square_wave_gpio30_31();
+		   
 		     println_str("GPY211 DETECTED");
 			
         break;
@@ -490,3 +475,4 @@ void vtss_phy_enab_smrt_premphasis(vtss_port_no_t port_no)
 /*  End of file.                                                            */
 /*                                                                          */
 /****************************************************************************/
+
