@@ -124,7 +124,8 @@ static void phy_power_optimizer (vtss_port_no_t port_no)
     if ((phy_id.family == VTSS_PHY_FAMILY_ATOM)    ||
         (phy_id.family == VTSS_PHY_FAMILY_LUTON26) ||
         (phy_id.family == VTSS_PHY_FAMILY_TESLA)   ||
-        (phy_id.family == VTSS_PHY_FAMILY_ELISE))
+        (phy_id.family == VTSS_PHY_FAMILY_ELISE)   ||
+        (phy_id.family = VTSS_PHY_FAMILY_GPY))
     {
         half_adc = 1;
     } else {
@@ -240,7 +241,8 @@ static void phy_receiver_init (vtss_port_no_t port_no) {
     if ((phy_id.family == VTSS_PHY_FAMILY_ATOM)    ||
         (phy_id.family == VTSS_PHY_FAMILY_LUTON26) ||
         (phy_id.family == VTSS_PHY_FAMILY_TESLA)   ||
-        (phy_id.family == VTSS_PHY_FAMILY_ELISE))
+        (phy_id.family == VTSS_PHY_FAMILY_ELISE)   ||
+        (phy_id.family = VTSS_PHY_FAMILY_GPY))
     {
         phy_page_tr(port_no);
         phy_write(port_no, 16, 0xafe4);
@@ -436,7 +438,15 @@ uchar phy_get_speed_and_fdx (vtss_port_no_t port_no)
 
     if (phy_id.vendor != PHY_VENDOR_VTSS) {
         /* Get speed and duplex mode into speed_fdx_mode variable */
+
+        reg_val = phy_read(port_no, 24);
+        speed_fdx_mode = ((uchar) reg_val) & 0x03;
+         if (reg_val & 0x8) {
+            speed_fdx_mode |= LINK_MODE_FDX_MASK;
+        }
         PHY_READ_SPEED_AND_FDX(port_no, reg_val, speed_fdx_mode);
+        /* update full duplex bit */
+       
         return speed_fdx_mode;
     }
 
@@ -529,6 +539,7 @@ bool phy_link_status (vtss_port_no_t port_no) small
  ****************************************************************************/
 {
     return ((phy_read(port_no, 1) & 0x0004) != 0);
+    //print_hex_w(port_no);
 }
 
 /**
@@ -625,6 +636,7 @@ void phy_receiver_reconfig( vtss_port_no_t  port_no,
     case VTSS_PHY_FAMILY_LUTON26:
     case VTSS_PHY_FAMILY_TESLA:
     case VTSS_PHY_FAMILY_ELISE:
+    case VTSS_PHY_FAMILY_GPY:
         /*
          * 65nm PHY adjusted VGA window to more effectively use dynamic range
          * as a result, VGA gains for a given cable length are higher here.
@@ -650,7 +662,8 @@ void phy_receiver_reconfig( vtss_port_no_t  port_no,
             if (!(phy_id.family == VTSS_PHY_FAMILY_ATOM)    &&
                 !(phy_id.family == VTSS_PHY_FAMILY_LUTON26) &&
                 !(phy_id.family == VTSS_PHY_FAMILY_TESLA)   &&
-                !(phy_id.family == VTSS_PHY_FAMILY_ELISE))
+                !(phy_id.family == VTSS_PHY_FAMILY_ELISE)&&
+                !(phy_id.family == VTSS_PHY_FAMILY_GPY))
             {
                 phy_page_tp(port_no);
                 phy_write_masked(port_no, 24, 0x0000, 0x2000);
@@ -774,6 +787,14 @@ void phy_post_reset (vtss_port_no_t port_no)
         break;
 #endif /* VTSS_ATOM12 */
 
+
+#if VTSS_GPY211
+    case VTSS_PHY_FAMILY_GPY:
+        gpy211_init_seq(port_no, &phy_id);
+       
+        break;
+#endif // VTSS_GPY211 
+
 #if VTSS_TESLA
     case VTSS_PHY_FAMILY_TESLA:
         tesla_init_seq(port_no, &phy_id);
@@ -893,6 +914,8 @@ void phy_setup (vtss_port_no_t port_no)
             phy_conf.mac_if         = VTSS_PORT_INTERFACE_QSGMII;
             phy_conf.media_if       = VTSS_PHY_MEDIA_IF_CU;
             atom12_mac_media_if_setup(port_no, &phy_conf);
+            // print_str("First");
+            // print_hex_w(port_no);
         }
         else if (port_no >= 20)
         {
@@ -900,11 +923,28 @@ void phy_setup (vtss_port_no_t port_no)
              phy_conf.mac_if        = VTSS_PORT_INTERFACE_QSGMII;
              phy_conf.media_if      = VTSS_PHY_MEDIA_IF_AMS_CU_1000BX;
              atom12_mac_media_if_setup(port_no, &phy_conf);
+            //  print_str("Second");
+            //  print_hex_w(port_no);
         }
 #endif // !defined(LUTON26_L10) && !defined(LUTON26_L16)
         break;
     }
 #endif // VTSS_ATOM12
+
+#if VTSS_GPY211
+    case VTSS_PHY_FAMILY_GPY:
+    {
+        phy_conf.cu_preferred = FALSE;
+        phy_conf.mac_if       = VTSS_PORT_INTERFACE_SGMII;
+        phy_conf.media_if     = VTSS_PHY_MEDIA_IF_CU;
+		//gpy211_mac_media_if_setup(port_no, &phy_conf);	                //add mac_media config for GPY211
+        // print_str("Third");
+        // print_hex_w(port_no);
+        break;
+    }
+#endif // VTSS_GPY211
+
+
 #if VTSS_TESLA
     case VTSS_PHY_FAMILY_TESLA:
     {
