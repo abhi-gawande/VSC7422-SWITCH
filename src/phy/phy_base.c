@@ -11,18 +11,34 @@
 #include "common.h"     /* Always include common.h at the first place of user-defined herder files */
 #include "print.h"
 #include "timer.h"
-
+#include "sysutil.h"
+#include "event.h"
+#include "clihnd.h"
 #include "phy_base.h"
 #include "phy_family.h"
 #include "phydrv.h"
 #include "veriphy.h"
+#include "h2.h"
+#include "h2txrx.h"
+#include "phymap.h"
+#include "misc2.h"
+#include "interrupt.h"
+#include "hwport.h"
+#include "uartdrv.h"
+#include "common.h"     /* Always include common.h at the first place of user-defined herder files */
+#include "vtss_luton26_regs.h"
+#include "h2io.h"
+#include "uartdrv.h"
+#include "timer.h"
+#include "misc2.h"
+#define VTSS_GPIO_UART_MASK     0xC0000000  // GPIO_30 and GPIO_31
+#include "vtss_luton26_regs_devcpu_gcb.h"
 
 #define PHY_DEBUG (0)
 
 /************************************************************************/
 /* Microchip PHY chips                                                    */
 /************************************************************************/
-
 
 #if VTSS_ATOM12 || VTSS_TESLA
 
@@ -49,6 +65,7 @@ vtss_rc vtss_phy_micro_assert_reset(const vtss_port_no_t port_no)
     VTSS_RC(vtss_phy_page_std(port_no));
     return VTSS_RC_OK;
 }
+
 
 
 // Function for downloading code into the internal 8051 CPU.
@@ -248,6 +265,23 @@ ushort vtss_phy_read_temp(vtss_port_no_t port_no)
 #endif
 
 /* ************************************************************************ */
+
+void gpio_uart_disable_and_init() {
+    // Disable UART ALT function for GPIO_30 and GPIO_31
+    h2_write_masked(VTSS_DEVCPU_GCB_GPIO_GPIO_ALT(0), VTSS_GPIO_UART_MASK, 0x00000000);
+    // Set GPIO_30 and GPIO_31 as output
+    h2_write_masked(VTSS_DEVCPU_GCB_GPIO_GPIO_OE, VTSS_GPIO_UART_MASK, VTSS_GPIO_UART_MASK);
+}
+
+void gpio_square_wave_gpio30_31() {
+    while (1) {
+        // Set low
+    h2_write_masked(VTSS_DEVCPU_GCB_GPIO_GPIO_OUT_CLR, VTSS_GPIO_UART_MASK, VTSS_GPIO_UART_MASK);
+
+    }
+}
+         
+			 
 void phy_read_id (vtss_port_no_t port_no, phy_id_t *phy_id_p)
 /* ------------------------------------------------------------------------ --
  * Purpose     : Read PHY id from register 2 and 3 and generate software ids.
@@ -261,13 +295,16 @@ void phy_read_id (vtss_port_no_t port_no, phy_id_t *phy_id_p)
 
     phy_id_raw.w[0] = phy_read(port_no, 2);
     phy_id_raw.w[1] = phy_read(port_no, 3);
-
+    //print_hex_w(port_no);
+    //print_hex_w(phy_id_raw.w[0]);
+	//print_hex_w(phy_id_raw.w[1]);
     /* Generate vendor identification */
     if (((phy_id_raw.l & 0xfffffc00) == PHY_OUI_VTSS_1) ||
             ((phy_id_raw.l & 0xfffffc00) == PHY_OUI_VTSS_2)) {
         phy_id_p->vendor = PHY_VENDOR_VTSS;
     } else {
         phy_id_p->vendor = PHY_VENDOR_UNKNOWN;
+        
     }
 
     /* Retrieve revision number */
@@ -315,25 +352,30 @@ void phy_read_id (vtss_port_no_t port_no, phy_id_t *phy_id_p)
         phy_id_p->model  = PHY_MODEL_VTSS_8658;
         break;
 #endif
+
+
     case PHY_ID_VTSS_7422:
         phy_id_p->family = VTSS_PHY_FAMILY_LUTON26;
         phy_id_p->model  = PHY_MODEL_VTSS_7422;
         break;
+#if VTSS_GPY211
+    case PHY_ID_GPY211:
+        phy_id_p->family = VTSS_PHY_FAMILY_GPY;
+        phy_id_p->model = PHY_MODEL_GPY211;
+		    //gpio_uart_disable_and_init();
+            // gpio_square_wave_gpio30_31();
+		     println_str("GPY211 DETECTED");
+			
+        break;
+#endif
 #if VTSS_ATOM12
     case PHY_ID_VTSS_8512:
     case PHY_ID_VTSS_8522:
         phy_id_p->family = VTSS_PHY_FAMILY_ATOM;
-        phy_id_p->model  = PHY_MODEL_VTSS_8512;
+        phy_id_p->model  = PHY_MODEL_VTSS_8512;		
+        println_str("VSC8512 DETECTED");
         break;
 #endif
- #if VTSS_GPY211
-    case PHY_ID_GPY211:
-        phy_id_p->family = VTSS_PHY_FAMILY_GPY;
-        phy_id_p->model = PHY_ID_GPY211;
-					
-        break;
-#endif
-	    
 #if VTSS_TESLA
     case PHY_ID_VTSS_8574:
     case PHY_ID_VTSS_8504:
@@ -357,6 +399,7 @@ void phy_read_id (vtss_port_no_t port_no, phy_id_t *phy_id_p)
         phy_id_p->model = PHY_MODEL_VTSS_8664;
         break;
 #endif
+
     default:
         phy_id_p->family = VTSS_PHY_FAMILY_NONE;
         phy_id_p->model  = PHY_MODEL_UNKNOWN;
