@@ -261,7 +261,7 @@ static uchar get_link_mode (vtss_port_no_t port_no)
     uchar link_mode;
 
     link_mode = phy_get_speed_and_fdx(port_no);
-
+   
     /* check if link partner supports pause frames */
     if (phy_read(port_no, 5) & 0x0400) {
         link_mode |= LINK_MODE_PAUSE_MASK;
@@ -280,7 +280,7 @@ static uchar get_link_mode (vtss_port_no_t port_no)
     } else if (eee_advertisement & 0x4) {
         link_mode |= LINK_MODE_POWER_MASK_1000BASE;
     }
-
+   
     return link_mode;
 }
 
@@ -301,7 +301,8 @@ static void do_link_down (vtss_port_no_t port_no)
     }
 
     h2_setup_port(port_no, LINK_MODE_DOWN);
-
+    print_str("h2_setup_port:");
+    print_hex_w(link_mode);
     callback_link_down(port_no);
 }
 
@@ -360,9 +361,14 @@ static void handle_phy (vtss_port_no_t port_no)
             /* shift state */
             phy_state[port_no] = LINK_UP;
             do_link_up(port_no);
+            // print_str("Phytsk: handle_phy() : Calling after do link up!\n");
+            // print_hex_w(port_no);
+            // print_str("\n");
+            
+
 #ifdef POLARITY_DETECT_FOR_10HDX_MODE
             if ((phy_get_speed_and_fdx(port_no) & (LINK_MODE_SPEED_MASK|LINK_MODE_FDX_MASK)) == LINK_MODE_HDX_10) {//10HDX
-                //println_str("Link is up: checking polarit...");
+                println_str("Link is up: checking polarit...");
                 phy_data = phy_read(port_no, 28);
                 if (phy_data&0x0C00) { //if POL_INVERSE bits[11:10] is set : polarity swapped
                     phy_write(port_no, 31, 0x2a30);  // switch to test-register page
